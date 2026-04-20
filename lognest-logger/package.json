@@ -11,7 +11,7 @@
     "debugging"
   ],
   "author": "Godsave Ogbidor Kawurem",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "chalk": "^4.1.2",
     "mongodb": "^7.1.1"
