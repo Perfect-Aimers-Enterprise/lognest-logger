@@ -1,0 +1,19 @@
+{
+  "name": "lognest-logger",
+  "version": "1.0.0",
+  "description": "Simple and clean logging library with optional MongoDB support and Express middleware",
+  "main": "index.js",
+  "keywords": [
+    "logger",
+    "logging",
+    "nodejs",
+    "express",
+    "debugging"
+  ],
+  "author": "Godsave Ogbidor Kawurem",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "mongodb": "^7.1.1"
+  }
+}
