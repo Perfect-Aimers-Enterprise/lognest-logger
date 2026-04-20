@@ -10,6 +10,11 @@
     "express",
     "debugging"
   ],
+  "homepage": "https://github.com/Perfect-Aimers-Enterprise/lognest-logger.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Perfect-Aimers-Enterprise/lognest-logger.git"
+  },
   "author": "Godsave Ogbidor Kawurem",
   "license": "MIT",
   "dependencies": {
