@@ -1,6 +1,6 @@
 const chalk = require("chalk");
 
-function formatLog(level, message, meta = {}, appName) {
+function formatLog(level, message, meta = {}, appName, extra = {}) {
   const timestamp = new Date().toISOString();
 
   const baseLog = {
@@ -8,7 +8,8 @@ function formatLog(level, message, meta = {}, appName) {
     message,
     timestamp,
     appName,
-    meta
+    meta,
+    ...extra,
   };
 
   let coloredLevel;
@@ -27,14 +28,23 @@ function formatLog(level, message, meta = {}, appName) {
       coloredLevel = chalk.blue("INFO");
   }
 
-  console.log(`
-[LOGNEST]
-${coloredLevel} | ${message}
-Time: ${timestamp}
-Meta: ${JSON.stringify(meta)}
-`);
+  const metaParts = [];
+  if (meta.method) metaParts.push(meta.method);
+  if (meta.route) metaParts.push(meta.route);
+  if (meta.statusCode) metaParts.push(chalk.white(meta.statusCode));
+  if (meta.duration) metaParts.push(chalk.magenta(meta.duration));
 
-  return baseLog;
+  const metaString = metaParts.length > 0 ? `| ${metaParts.join(" • ")}` : "";
+
+  console.log(`
+${chalk.gray("--------------------------------------------------")}
+${coloredLevel} ${chalk.white(message)} 
+Meta: ${metaString}
+Time: ${timestamp}
+${chalk.gray("At:")} ${chalk.cyan.underline(extra.vscodeLink)}
+${chalk.gray("--------------------------------------------------")}`);
+
+  return { level, message, timestamp, appName, meta, ...extra };
 }
 
 module.exports = formatLog;

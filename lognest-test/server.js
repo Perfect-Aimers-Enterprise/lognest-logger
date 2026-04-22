@@ -1,17 +1,18 @@
 const express = require("express");
-const lognest = require("lognest-logger");
+const logger = require("lognest-logger");
 
 const app = express();
 
-lognest.init({
+logger.init({
   appName: "my-api",
 });
 
-app.use(lognest.middleware());
+app.use(logger.middleware());
 
+// logger.info("Manual check");
 // SUCCESS (200)
-app.get("/success", (req, res) => {
-  res.status(200).send("Success route");
+app.get("/successes", (req, res) => {
+  res.status(201).send("Success route");
 });
 
 // INFO (redirect)
@@ -29,11 +30,23 @@ app.get("/error", (req, res) => {
   res.status(500).send("Server error");
 });
 
+app.get("/errormessage", (req, res) => {
+  throw new Error("Boom");
+});
+
+app.get(
+  "/errorasync",
+  logger.wrap(async (req, res) => {
+    throw new Error("Async Boom");
+  }),
+);
+
 // Default
 app.get("/", (req, res) => {
   res.send("Home");
 });
 
+app.use(logger.errorMiddleware);
 app.listen(3000, () => {
   console.log("Server running...");
 });

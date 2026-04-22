@@ -1,44 +1,29 @@
 const formatLog = require("./formatter");
 const { getConfig } = require("./config");
 const { saveLog } = require("./db");
+const { parseStack, getCurrentStackTrace } = require("./utils/stackParser");
 
-function log(level, message, meta) {
+function log(level, message, meta, traceOverride = null) {
   const { appName } = getConfig();
 
-  const logData = formatLog(level, message, meta, appName);
+  const stackToParse = meta.stack || traceOverride || getCurrentStackTrace();
+  const trace = parseStack(stackToParse);
+
+  const vscodeLink = trace.full && trace.full.includes(":") ? `at ${trace.full}` : trace.full;
+
+  const logData = formatLog(level, message, meta, appName, {
+    file: trace.file || "unknown",
+    line: trace.line || "?",
+    vscodeLink: vscodeLink,
+  });
 
   saveLog(logData);
 }
 
-function middleware() {
-  return (req, res, next) => {
-    const start = Date.now();
-
-    res.on("finish", () => {
-      const duration = Date.now() - start;
-      const status = res.statusCode;
-
-      let level = "info";
-
-      if (status >= 500) level = "error";
-      else if (status >= 400) level = "warn";
-      else if (status >= 200 && status < 300) level = "success";
-
-      log(level, `${req.method} ${req.url}`, {
-        statusCode: status,
-        duration: `${duration}ms`,
-      });
-    });
-
-    next();
-  };
-}
-
 module.exports = {
+  log,
   error: (msg, meta) => log("error", msg, meta),
   warn: (msg, meta) => log("warn", msg, meta),
   info: (msg, meta) => log("info", msg, meta),
   success: (msg, meta) => log("success", msg, meta),
 };
-
-module.exports.middleware = middleware;

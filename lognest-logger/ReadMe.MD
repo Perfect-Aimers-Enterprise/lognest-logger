@@ -1,6 +1,6 @@
-# LogNest Logger
+# 🦅 LogNest Logger
 
-A simple, clean, and powerful logging library for Node.js with optional database support and Express middleware.
+A powerful, structured Node.js logger that turns messy stack traces into **clean, clickable VS Code links**. Designed specifically for Express developers who want to stay in the flow.
 
 ---
 
@@ -12,109 +12,129 @@ npm install lognest-logger
 
 ---
 
-## ⚡ Basic Usage
+## ⚙️ Configuration
+
+Initialize LogNest at the very start of your app.
 
 ```js
-const lognest = require("lognest-logger");
+const logger = require("lognest-logger");
 
-lognest.init({
+logger.init({
   appName: "my-api",
-});
-
-lognest.info("Server started");
-```
-
----
-
-## 🗄️ Using with Database (Optional)
-
-LogNest supports saving logs to MongoDB if a `dbUrl` is provided.
-
-```js
-lognest.init({
-  appName: "my-api",
-  dbUrl: "mongodb://localhost:27017/logs",
+  dbUrl: "mongodb://localhost:27017/logs", // Optional: Saves logs to MongoDB
 });
 ```
 
 ---
 
-## 🌐 Using with Express (Middleware)
+## 🌐 Express Integration
 
-Automatically log requests, responses, and status codes.
+LogNest provides two types of middleware: one for tracking requests and one for catching errors.
+
+### 1. Request Tracking
+
+Place this at the top of your middleware stack to log every incoming request.
 
 ```js
-const express = require("express");
-const lognest = require("lognest-logger");
+app.use(logger.middleware());
+```
 
-const app = express();
+### 2. Error Handling (The "Cleaner")
 
-lognest.init({
-  appName: "my-api",
-});
+**Important:** Place this at the very bottom of your file, after all routes. This intercepts errors and formats them beautifully.
 
-app.use(lognest.middleware());
+```js
+// After all routes
+app.use(logger.errorMiddleware);
+```
 
-app.get("/", (req, res) => {
-  res.send("Hello");
-});
+### 3. Async Wrapper
 
-app.listen(3000);
+Use `logger.wrap` to ensure async errors are caught and passed to the logger correctly.
+
+```js
+app.get(
+  "/users",
+  logger.wrap(async (req, res) => {
+    const users = await User.find(); // If this fails, LogNest catches it!
+    res.json(users);
+  }),
+);
 ```
 
 ---
 
-## 🎨 Log Levels
+## 🖱️ Manual Logging (The `.info`, `.success`, etc.)
 
-- `error` → 🔴 Red
-- `warn` → 🟡 Yellow
-- `info` → 🔵 Blue
-- `success` → 🟢 Green
+You can log manually anywhere in your app. LogNest automatically captures the file and line number where the log was called.
 
----
+```js
+// Simple message
+logger.info("Database connected");
 
-## 🧱 Log Structure
+// Message with Metadata
+logger.warn("High memory usage", { usage: "85%", pid: 1234 });
 
-Logs follow a consistent structure:
+// Success messages
+logger.success("Payment processed", { amount: 500, currency: "USD" });
 
-```json
-{
-  "level": "error",
-  "message": "Something failed",
-  "timestamp": "ISO string",
-  "appName": "my-api",
-  "meta": {}
+// Error logging (Manual)
+try {
+  throw new Error("Disk Full");
+} catch (err) {
+  logger.error(err.message, { stack: err.stack });
 }
 ```
 
 ---
 
-## 🧠 Philosophy
+## 🎨 Clean Terminal Output
 
-- Simple to use
-- Clean terminal output
-- Optional persistence
-- Developer-friendly
+LogNest transforms standard Node.js output into a structured block:
+
+```text
+--------------------------------------------------
+ERROR | Connection Timeout | GET • /api/v1/users • 500
+at C:\Users\Project\server.js:45:12
+--------------------------------------------------
+```
+
+_Note: The "at..." line is a **clickable link** in VS Code. Ctrl+Click to jump directly to the error._
 
 ---
 
-## 📌 Future Improvements
+## 🧱 Log Structure
 
-- Request ID tracking
-- Error stack parsing
-- VS Code extension integration
+Every log (stored or printed) follows this schema:
+
+| Field        | Description                                              |
+| :----------- | :------------------------------------------------------- |
+| `level`      | `error`, `warn`, `info`, or `success`                    |
+| `message`    | The primary log message                                  |
+| `timestamp`  | ISO 8601 string                                          |
+| `appName`    | Your configured app name                                 |
+| `meta`       | Object containing route, method, status, and custom data |
+| `vscodeLink` | Direct path to the file and line of the event            |
+
+---
+
+## 📂 Project Structure
+
+For version 2.0, LogNest is now modular:
+
+- `utils/stackParser.js`: The engine that cleans up stack traces.
+- `middleware/`: Specific handlers for Express requests and errors.
+- `logger.js`: The core logging logic.
 
 ---
 
 ## 📄 License
 
-ISC
+MIT
 
----
+## 🔗 Repository
 
-## Github Repo
-
-https://github.com/Perfect-Aimers-Enterprise/lognest-logger.git
+[https://github.com/Perfect-Aimers-Enterprise/lognest-logger.git](https://github.com/Perfect-Aimers-Enterprise/lognest-logger.git)
 
 ```
 

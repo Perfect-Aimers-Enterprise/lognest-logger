@@ -1,3 +1,12 @@
 node_modules/
 dist/
 lognest-logger-1.0.0.tgz
+
+
+
+### One Final Peer Tip
+Since you're building this for a "next version," consider adding a small check in your `log` function to see if `meta` is actually an Error object. Sometimes devs do `logger.error(err)`. 
+
+If you add `if (message instanceof Error) { meta.stack = message.stack; message = message.message; }` at the very start of the `log` function, your logger becomes bulletproof!
+
+How are you planning to handle the MongoDB connection—internal to the library or passed in?
